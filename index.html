@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Visualizing performance of parameters in Gradient Boosting</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Visualizing performance of parameters in Gradient Boosting">
+  <meta name="author" content="Data Miner">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>Visualizing performance of parameters in Gradient Boosting</h1>
+    <h2>in the algae bloom domain</h2>
+    <p>Data Miner<br/>Data Mining Inc.</p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Introduction to Gradient Boosting</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p>GBM (Gradient Boosting Machines) is a machine learning algorithm that allows to learn models from data.</p></li>
+<li><p>GBM is available in an R-package called <a href="http://cran.r-project.org/web/packages/gbm/index.html">gbm</a></p></li>
+<li><p>Typical GBM models are ensembles of trees</p></li>
+<li><p>In order for GBM to have good performance, several parameters must be tuned. In particular, <strong>n.trees</strong> (number of trees), <strong>shrinkage</strong> (learning rate), tree-depth (<strong>interaction-depth</strong>), or <strong>n.minobsinnode</strong> (number of instances in the tree leaves). Visualizing for every parameter, how validation error changes as the number of trees increases, can help in understanding and selecting the best combination of parameters.</p></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Aim of the shiny application</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>A file with gbm validation results for <a href="http://www.dcc.fc.up.pt/%7Eltorgo/DataMiningWithR/datasets2.html">predicting Algae Blooms</a> has been previously generated for all possible combinations of values of the following parameters:</li>
+</ul>
+
+<pre><code>## $interaction.depth
+##  [1]  1  2  3  4  5  6  8 10 12 14
+## 
+## $shrinkage
+##  [1] 1e-04 5e-04 1e-03 1e-02 2e-02 3e-02 4e-02 5e-02 1e-01 5e-01
+## 
+## $n.minobsinnode
+##  [1]  2  3  4  5  6  7  8  9 10 11 12 13 14 15 20 25 30
+## 
+## $n.trees
+##  [1]    10    20    30    40    50    60    70    80    90   100   500
+## [12]  1000  1500  2000  2500  3000  3500  4000  4500  5000  5500  6000
+## [23]  6500  7000  7500  8000  8500  9000  9500 10000 10500 11000 11500
+## [34] 12000 12500 13000 13500 14000 14500 15000
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Aim of the shiny application</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>The purpose of the application is to visualize validation error vs. number of trees for every parameter. The user can select one parameter from interactive.depth, shrinkage, and n.minobsinnode. The user can choose to visualize in the same plot all values of the selected parameter, by choosing Outer=FALSE, or in different plots, by selecting Outer=TRUE. Below there is an example for shrinkage with Outer=FALSE:</li>
+</ul>
+
+<pre><code class="r">        res = ddply(results, c(&quot;n.trees&quot;,&quot;shrinkage&quot;), summarize, Validation=min(Validation))
+        xyplot(Validation ~ n.trees, groups=factor(shrinkage), res, 
+               main=&quot;Shrinkage&quot;, type=&quot;l&quot;, as.table=TRUE, outer=FALSE, auto.key=list(columns=5))
+</code></pre>
+
+<p><img src="assets/fig/unnamed-chunk-3.png" alt="plot of chunk unnamed-chunk-3"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Aim of the shiny application</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>Here there is an example with Outer=TRUE</li>
+</ul>
+
+<pre><code class="r">        res = ddply(results, c(&quot;n.trees&quot;,&quot;shrinkage&quot;), summarize, Validation=min(Validation))
+        xyplot(Validation ~ n.trees|factor(shrinkage), res, 
+               main=&quot;Shrinkage&quot;, type=&quot;l&quot;, as.table=TRUE, outer=FALSE, auto.key=TRUE)
+</code></pre>
+
+<p><img src="assets/fig/unnamed-chunk-4.png" alt="plot of chunk unnamed-chunk-4"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Introduction to Gradient Boosting'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Aim of the shiny application'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Aim of the shiny application'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Aim of the shiny application'>
+         4
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>

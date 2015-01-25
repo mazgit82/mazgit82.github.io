@@ -1,0 +1,80 @@
+---
+title       : Visualizing performance of parameters in Gradient Boosting
+subtitle    : in the algae bloom domain
+author      : Data Miner
+job         : Data Mining Inc.
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+
+## Introduction to Gradient Boosting
+
+
+- GBM (Gradient Boosting Machines) is a machine learning algorithm that allows to learn models from data.
+
+- GBM is available in an R-package called [gbm](http://cran.r-project.org/web/packages/gbm/index.html)
+
+- Typical GBM models are ensembles of trees
+
+- In order for GBM to have good performance, several parameters must be tuned. In particular, **n.trees** (number of trees), **shrinkage** (learning rate), tree-depth (**interaction-depth**), or **n.minobsinnode** (number of instances in the tree leaves). Visualizing for every parameter, how validation error changes as the number of trees increases, can help in understanding and selecting the best combination of parameters.
+
+--- .class #id 
+
+## Aim of the shiny application
+
+- A file with gbm validation results for [predicting Algae Blooms](http://www.dcc.fc.up.pt/~ltorgo/DataMiningWithR/datasets2.html) has been previously generated for all possible combinations of values of the following parameters:
+
+```{r,echo=FALSE}
+rangos_parametros = list(c(1, 2, 3, 4, 5, 6, 8, 10, 12, 14),
+                         c(0.0001, 0.0005, 0.001, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.5),
+                         c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 25, 30),
+                         c(seq(10,100,10), seq(500,15000, 500))
+                         )
+
+nombres_parametros = c("interaction.depth", "shrinkage", "n.minobsinnode", "n.trees")
+names(rangos_parametros) = nombres_parametros
+print(rangos_parametros)
+```
+
+
+--- .class #id 
+
+## Aim of the shiny application
+
+- The purpose of the application is to visualize validation error vs. number of trees for every parameter. The user can select one parameter from interactive.depth, shrinkage, and n.minobsinnode. The user can choose to visualize in the same plot all values of the selected parameter, by choosing Outer=FALSE, or in different plots, by selecting Outer=TRUE. Below there is an example for shrinkage with Outer=FALSE:
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE}
+
+install_github("paraGBMalgae", user="mazgit82")
+library(paraGBMalgae)
+
+data(para1)
+results = para1
+names(results)=c("interaction.depth", "shrinkage", "n.minobsinnode", 
+                 "n.trees", "Validation")
+```
+
+```{r,fig.width=6,fig.height=4}
+        res = ddply(results, c("n.trees","shrinkage"), summarize, Validation=min(Validation))
+        xyplot(Validation ~ n.trees, groups=factor(shrinkage), res, 
+               main="Shrinkage", type="l", as.table=TRUE, outer=FALSE, auto.key=list(columns=5))
+```
+
+--- .class #id 
+
+## Aim of the shiny application
+
+- Here there is an example with Outer=TRUE
+
+```{r,,fig.width=6,fig.height=4}
+        res = ddply(results, c("n.trees","shrinkage"), summarize, Validation=min(Validation))
+        xyplot(Validation ~ n.trees|factor(shrinkage), res, 
+               main="Shrinkage", type="l", as.table=TRUE, outer=FALSE, auto.key=TRUE)
+```
+ 
+
